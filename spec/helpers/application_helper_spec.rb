@@ -17,26 +17,32 @@ describe ApplicationHelper do
     it 'returns a FontAwesome icon element' do
       icon = icon_tag('fa-copy')
       expect(icon).to be_html_safe
-      expect(Nokogiri(icon).at('i.fa.fa-copy')).to be_a Nokogiri::XML::Element
+      expect(Nokogiri(icon).at('i.fa-solid.fa-copy')).to be_a Nokogiri::XML::Element
     end
 
-    it 'returns a FontAwesome icon element' do
+    it 'returns a FontAwesome icon element with an additional class' do
       icon = icon_tag('fa-copy', class: 'text-info')
       expect(icon).to be_html_safe
-      expect(Nokogiri(icon).at('i.fa.fa-copy.text-info')).to be_a Nokogiri::XML::Element
+      expect(Nokogiri(icon).at('i.fa-solid.fa-copy.text-info')).to be_a Nokogiri::XML::Element
+    end
+
+    it 'returns a FontAwesome brand icon element' do
+      icon = icon_tag('fa-github', class: 'fa-brands')
+      expect(icon).to be_html_safe
+      expect(Nokogiri(icon).at('i.fa-brands.fa-github')).to be_a Nokogiri::XML::Element
     end
   end
 
   describe '#nav_link' do
     it 'returns a nav link' do
-      stub(self).current_page?('/things') { false }
+      allow(self).to receive(:current_page?).with('/things') { false }
       nav = nav_link('Things', '/things')
       a = Nokogiri(nav).at('li:not(.active) > a[href="/things"]')
       expect(a.text.strip).to eq('Things')
     end
 
     it 'returns an active nav link' do
-      stub(self).current_page?('/things') { true }
+      allow(self).to receive(:current_page?).with('/things') { true }
       nav = nav_link('Things', '/things')
       expect(nav).to be_html_safe
       a = Nokogiri(nav).at('li.active > a[href="/things"]')
@@ -46,8 +52,8 @@ describe ApplicationHelper do
 
     describe 'with block' do
       it 'returns a nav link with menu' do
-        stub(self).current_page?('/things') { false }
-        stub(self).current_page?('/things/stuff') { false }
+        allow(self).to receive(:current_page?).with('/things') { false }
+        allow(self).to receive(:current_page?).with('/things/stuff') { false }
         nav = nav_link('Things', '/things') { nav_link('Stuff', '/things/stuff') }
         expect(nav).to be_html_safe
         a0 = Nokogiri(nav).at('li.dropdown.dropdown-hover:not(.active) > a[href="/things"]')
@@ -59,8 +65,8 @@ describe ApplicationHelper do
       end
 
       it 'returns an active nav link with menu' do
-        stub(self).current_page?('/things') { true }
-        stub(self).current_page?('/things/stuff') { false }
+        allow(self).to receive(:current_page?).with('/things') { true }
+        allow(self).to receive(:current_page?).with('/things/stuff') { false }
         nav = nav_link('Things', '/things') { nav_link('Stuff', '/things/stuff') }
         expect(nav).to be_html_safe
         a0 = Nokogiri(nav).at('li.dropdown.dropdown-hover.active > a[href="/things"]')
@@ -72,8 +78,8 @@ describe ApplicationHelper do
       end
 
       it 'returns an active nav link with menu when on a child page' do
-        stub(self).current_page?('/things') { false }
-        stub(self).current_page?('/things/stuff') { true }
+        allow(self).to receive(:current_page?).with('/things') { false }
+        allow(self).to receive(:current_page?).with('/things/stuff') { true }
         nav = nav_link('Things', '/things') { nav_link('Stuff', '/things/stuff') }
         expect(nav).to be_html_safe
         a0 = Nokogiri(nav).at('li.dropdown.dropdown-hover.active > a[href="/things"]')
@@ -110,28 +116,28 @@ describe ApplicationHelper do
     end
 
     it 'returns a label "Disabled" if a given agent is disabled' do
-      stub(@agent).disabled? { true }
+      allow(@agent).to receive(:disabled?) { true }
       label = working(@agent)
       expect(label).to be_html_safe
       expect(Nokogiri(label).text).to eq 'Disabled'
     end
 
     it 'returns a label "Missing Gems" if a given agent has dependencies missing' do
-      stub(@agent).dependencies_missing? { true }
+      allow(@agent).to receive(:dependencies_missing?) { true }
       label = working(@agent)
       expect(label).to be_html_safe
       expect(Nokogiri(label).text).to eq 'Missing Gems'
     end
 
     it 'returns a label "Yes" if a given agent is working' do
-      stub(@agent).working? { true }
+      allow(@agent).to receive(:working?) { true }
       label = working(@agent)
       expect(label).to be_html_safe
       expect(Nokogiri(label).text).to eq 'Yes'
     end
 
     it 'returns a label "No" if a given agent is not working' do
-      stub(@agent).working? { false }
+      allow(@agent).to receive(:working?) { false }
       label = working(@agent)
       expect(label).to be_html_safe
       expect(Nokogiri(label).text).to eq 'No'
@@ -142,53 +148,53 @@ describe ApplicationHelper do
     it 'returns a correct icon tag for Twitter' do
       icon = omniauth_provider_icon(:twitter)
       expect(icon).to be_html_safe
-      elem = Nokogiri(icon).at('i.fa.fa-twitter')
+      elem = Nokogiri(icon).at('i.fa-brands.fa-twitter')
       expect(elem).to be_a Nokogiri::XML::Element
     end
 
     it 'returns a correct icon tag for GitHub' do
       icon = omniauth_provider_icon(:github)
       expect(icon).to be_html_safe
-      elem = Nokogiri(icon).at('i.fa.fa-github')
+      elem = Nokogiri(icon).at('i.fa-brands.fa-github')
       expect(elem).to be_a Nokogiri::XML::Element
     end
 
     it 'returns a correct icon tag for other services' do
-      icon = omniauth_provider_icon(:'37signals')
+      icon = omniauth_provider_icon(:evernote)
       expect(icon).to be_html_safe
-      elem = Nokogiri(icon).at('i.fa.fa-lock')
+      elem = Nokogiri(icon).at('i.fa-solid.fa-lock')
       expect(elem).to be_a Nokogiri::XML::Element
     end
   end
 
   describe '#highlighted?' do
     it 'understands hl=6-8' do
-      stub(params).[](:hl) { '6-8' }
+      allow(params).to receive(:[]).with(:hl) { '6-8' }
       expect((1..10).select { |i| highlighted?(i) }).to eq [6, 7, 8]
     end
 
     it 'understands hl=1,3-4,9' do
-      stub(params).[](:hl) { '1,3-4,9' }
+      allow(params).to receive(:[]).with(:hl) { '1,3-4,9' }
       expect((1..10).select { |i| highlighted?(i) }).to eq [1, 3, 4, 9]
     end
 
     it 'understands hl=8-' do
-      stub(params).[](:hl) { '8-' }
+      allow(params).to receive(:[]).with(:hl) { '8-' }
       expect((1..10).select { |i| highlighted?(i) }).to eq [8, 9, 10]
     end
 
     it 'understands hl=-2' do
-      stub(params).[](:hl) { '-2' }
+      allow(params).to receive(:[]).with(:hl) { '-2' }
       expect((1..10).select { |i| highlighted?(i) }).to eq [1, 2]
     end
 
     it 'understands hl=-' do
-      stub(params).[](:hl) { '-' }
+      allow(params).to receive(:[]).with(:hl) { '-' }
       expect((1..10).select { |i| highlighted?(i) }).to eq [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     end
 
     it 'is OK with no hl' do
-      stub(params).[](:hl) { nil }
+      allow(params).to receive(:[]).with(:hl) { nil }
       expect((1..10).select { |i| highlighted?(i) }).to be_empty
     end
   end
